@@ -6,6 +6,7 @@
 </head>
 <body>
     <h1>To-Do List</h1>
+    <a href="{{ url_for('logout') }}">Logout</a>
     <ul>
         {% for task in tasks %}
         <li>
