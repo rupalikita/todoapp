@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Task</title>
+</head>
+<body>
+    <h1>Edit Task</h1>
+    <form action="{{ url_for('edit_task', id=task[0]) }}" method="POST">
+        <input type="text" name="title" value="{{ task[1] }}" required>
+        <input type="checkbox" name="completed" {% if task[2] %} checked {% endif %}> Completed
+        <button type="submit">Update</button>
+    </form>
+    <a href="{{ url_for('index') }}">Back to To-Do List</a>
+</body>
+</html>

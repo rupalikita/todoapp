@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Task</title>
+</head>
+<body>
+    <h1>Add Task</h1>
+    <form action="{{ url_for('add_task') }}" method="POST">
+        <input type="text" name="title" required>
+        <button type="submit">Add</button>
+    </form>
+    <a href="{{ url_for('index') }}">Back to To-Do List</a>
+</body>
+</html>
