@@ -68,8 +68,9 @@ def logout():
 @app.route('/')
 @login_required
 def index():
+    user_id = current_user.id
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM tasks")
+    cur.execute("SELECT * FROM tasks WHERE user_id = %s", [user_id])
     tasks = cur.fetchall()
     cur.close()
     return render_template('index.html', tasks=tasks)
@@ -79,8 +80,9 @@ def index():
 def add_task():
     if request.method == 'POST':
         title = request.form['title']
+        user_id = current_user.id
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO tasks (title) VALUES (%s)", [title])
+        cur.execute("INSERT INTO tasks (title, user_id) VALUES (%s, %s)", [title, user_id])
         mysql.connection.commit()
         cur.close()
         return redirect(url_for('index'))
@@ -89,25 +91,30 @@ def add_task():
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_task(id):
+    user_id = current_user.id
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM tasks WHERE id = %s", [id])
+    cur.execute("SELECT * FROM tasks WHERE id = %s AND user_id = %s", [id, user_id])
     task = cur.fetchone()
-    cur.close()
-    if request.method == 'POST':
-        title = request.form['title']
-        completed = 'completed' in request.form
-        cur = mysql.connection.cursor()
-        cur.execute("UPDATE tasks SET title = %s, completed = %s WHERE id = %s", (title, completed, id))
-        mysql.connection.commit()
-        cur.close()
+    if task:
+       if request.method == 'POST':
+          title = request.form['title']
+          completed = 'completed' in request.form
+          cur = mysql.connection.cursor()
+          cur.execute("UPDATE tasks SET title = %s, completed = %s WHERE id = %s AND user_id = %s", (title, completed, id, user_id))
+          mysql.connection.commit()
+        
+          return redirect(url_for('index'))
+       return render_template('edit_task.html', task=task)
+    else:
+        flash("Unauthorized access.", "danger")
         return redirect(url_for('index'))
-    return render_template('edit_task.html', task=task)
-
+    
 @app.route('/delete/<int:id>')
 @login_required
 def delete_task(id):
+    user_id = current_user.id
     cur = mysql.connection.cursor()
-    cur.execute("DELETE FROM tasks WHERE id = %s", [id])
+    cur.execute("DELETE FROM tasks WHERE id = %s AND user_id = %s", [id, user_id])
     mysql.connection.commit()
     cur.close()
     return redirect(url_for('index'))
@@ -115,8 +122,9 @@ def delete_task(id):
 @app.route('/complete/<int:id>')
 @login_required
 def complete_task(id):
+    user_id = current_user.id
     cur = mysql.connection.cursor()
-    cur.execute("UPDATE tasks SET completed = %s WHERE id = %s", (True, id))
+    cur.execute("UPDATE tasks SET completed = %s WHERE id = %s AND user_id = %s", (True, id, user_id))
     mysql.connection.commit()
     cur.close()
     return redirect(url_for('index'))
